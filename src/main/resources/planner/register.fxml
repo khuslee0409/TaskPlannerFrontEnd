@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="700.0" stylesheets="@magic.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="planner.ui.RegisterController">
+   <children>
+      <TextField fx:id="newUsername" alignment="CENTER" layoutX="241.0" layoutY="250.0" prefHeight="36.0" prefWidth="220.0" promptText="Enter username">
+         <font>
+            <Font name="Lucida Console" size="20.0" />
+         </font></TextField>
+      <TextField fx:id="newPassword" alignment="CENTER" layoutX="240.0" layoutY="395.0" prefHeight="36.0" prefWidth="220.0" promptText="Enter password">
+         <font>
+            <Font name="Lucida Console" size="20.0" />
+         </font></TextField>
+      <Label fx:id="statusLabel" alignment="CENTER" layoutX="18.0" layoutY="55.0" prefHeight="91.0" prefWidth="666.0" text="Register a new user" textAlignment="CENTER">
+         <font>
+            <Font name="Lucida Console" size="36.0" />
+         </font>
+      </Label>
+      <Button layoutX="307.0" layoutY="580.0" mnemonicParsing="false" onAction="#addUser" text="Register" />
+      <TextField fx:id="confirmPass" alignment="CENTER" layoutX="241.0" layoutY="443.0" prefHeight="36.0" prefWidth="220.0" promptText="Confirm password">
+         <font>
+            <Font name="Lucida Console" size="20.0" />
+         </font></TextField>
+      <Button fx:id="backToLogin" layoutX="416.0" layoutY="580.0" mnemonicParsing="false" onAction="#onBack" prefHeight="36.0" prefWidth="88.0" text="Back" />
+      <TextField fx:id="email" alignment="CENTER" layoutX="240.0" layoutY="299.0" prefHeight="36.0" prefWidth="220.0" promptText="Enter email">
+         <font>
+            <Font name="Lucida Console" size="20.0" />
+         </font>
+      </TextField>
+      <TextField fx:id="confirmCodeEmail" alignment="CENTER" layoutX="240.0" layoutY="347.0" prefHeight="36.0" prefWidth="220.0" promptText="Enter code">
+         <font>
+            <Font name="Lucida Console" size="20.0" />
+         </font>
+      </TextField>
+      <Button layoutX="193.0" layoutY="580.0" mnemonicParsing="false" onAction="#sendCode" text="Send code">
+         <font>
+            <Font size="6.0" />
+         </font>
+      </Button>
+      <Label fx:id="warningMessage" layoutX="169.0" layoutY="225.0" text="A code from your email is required in order to register">
+         <font>
+            <Font name="Lucida Console" size="11.0" />
+         </font>
+      </Label>
+   </children>
+</Pane>

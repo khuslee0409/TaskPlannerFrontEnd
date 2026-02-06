@@ -1,0 +1,14 @@
+.button{
+    -fx-background-color: #2d5dcc;
+    -fx-text-fill: WHITE;
+    -fx-border-radius: 10px;
+    -fx-padding: 10px;
+    -fx-padding-left: 10px;
+    -fx-padding-right: 10px;
+    -fx-font-family:"Lucida Console", "Courier New", monospace;
+    -fx-font-size: 14px;
+}
+
+.button:hover{
+    -fx-background-color: BLUE;
+}

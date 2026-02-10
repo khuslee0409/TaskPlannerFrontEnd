@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import planner.SceneNavigator;
+import planner.Session;
 import planner.api.ApiClient;
 import planner.api.RegisterApi;
 import planner.api.dto.RegisterRequest;
@@ -14,6 +15,9 @@ public class RegisterController {
     
     @FXML
     private TextField confirmCodeEmail;
+
+    @FXML
+    private TextField email;
 
     @FXML
     private TextField confirmPass;
@@ -38,12 +42,15 @@ public class RegisterController {
         String username = newUsername.getText();
         String password = newPassword.getText();
         String coPass = confirmPass.getText();
+        String theEmail = email.getText();
+
 
 
 
         try {
             if(coPass.equals(password)){
-                registerApi.register(username, password);
+                registerApi.register(username, password, theEmail);
+                Session.setPendingEmail(theEmail);
                 statusLabel.setText("Register successfull"); 
             }else{
                 statusLabel.setText("Passwords don't match");
@@ -53,6 +60,8 @@ public class RegisterController {
             statusLabel.setText("Login failed: " + e.getMessage());
         }
 
+        SceneNavigator.goToConfirmationPage();
+
     }
 
     @FXML
@@ -60,10 +69,6 @@ public class RegisterController {
         SceneNavigator.goToLogin();
     }
 
-    @FXML
-    void sendCode(ActionEvent event) {
-
-    }
 
 }
 

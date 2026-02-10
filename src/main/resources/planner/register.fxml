@@ -12,7 +12,7 @@
          <font>
             <Font name="Lucida Console" size="20.0" />
          </font></TextField>
-      <TextField fx:id="newPassword" alignment="CENTER" layoutX="240.0" layoutY="395.0" prefHeight="36.0" prefWidth="220.0" promptText="Enter password">
+      <TextField fx:id="newPassword" alignment="CENTER" layoutX="240.0" layoutY="349.0" prefHeight="36.0" prefWidth="220.0" promptText="Enter password">
          <font>
             <Font name="Lucida Console" size="20.0" />
          </font></TextField>
@@ -21,28 +21,18 @@
             <Font name="Lucida Console" size="36.0" />
          </font>
       </Label>
-      <Button layoutX="307.0" layoutY="580.0" mnemonicParsing="false" onAction="#addUser" text="Register" />
-      <TextField fx:id="confirmPass" alignment="CENTER" layoutX="241.0" layoutY="443.0" prefHeight="36.0" prefWidth="220.0" promptText="Confirm password">
+      <Button layoutX="240.0" layoutY="580.0" mnemonicParsing="false" onAction="#addUser" text="Register" />
+      <TextField fx:id="confirmPass" alignment="CENTER" layoutX="240.0" layoutY="397.0" prefHeight="36.0" prefWidth="220.0" promptText="Confirm password">
          <font>
             <Font name="Lucida Console" size="20.0" />
          </font></TextField>
-      <Button fx:id="backToLogin" layoutX="416.0" layoutY="580.0" mnemonicParsing="false" onAction="#onBack" prefHeight="36.0" prefWidth="88.0" text="Back" />
+      <Button fx:id="backToLogin" layoutX="373.0" layoutY="580.0" mnemonicParsing="false" onAction="#onBack" prefHeight="36.0" prefWidth="88.0" text="Back" />
       <TextField fx:id="email" alignment="CENTER" layoutX="240.0" layoutY="299.0" prefHeight="36.0" prefWidth="220.0" promptText="Enter email">
          <font>
             <Font name="Lucida Console" size="20.0" />
          </font>
       </TextField>
-      <TextField fx:id="confirmCodeEmail" alignment="CENTER" layoutX="240.0" layoutY="347.0" prefHeight="36.0" prefWidth="220.0" promptText="Enter code">
-         <font>
-            <Font name="Lucida Console" size="20.0" />
-         </font>
-      </TextField>
-      <Button layoutX="193.0" layoutY="580.0" mnemonicParsing="false" onAction="#sendCode" text="Send code">
-         <font>
-            <Font size="6.0" />
-         </font>
-      </Button>
-      <Label fx:id="warningMessage" layoutX="169.0" layoutY="225.0" text="A code from your email is required in order to register">
+      <Label fx:id="warningMessage" layoutX="141.0" layoutY="214.0" text="A code will be sent to your email address to verify your email address">
          <font>
             <Font name="Lucida Console" size="11.0" />
          </font>

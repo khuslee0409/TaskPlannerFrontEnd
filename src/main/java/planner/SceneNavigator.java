@@ -15,11 +15,11 @@ public class SceneNavigator {
     }
 
     public static void goToLogin() {
-        setScene("login.fxml", 700, 560);
+        setScene("login.fxml", 700, 650);
     }
 
     public static void goToTasks() {
-        setScene("tasks.fxml", 700, 560);
+        setScene("tasks.fxml", 700, 650);
     }
 
     public static void goToRegister(){

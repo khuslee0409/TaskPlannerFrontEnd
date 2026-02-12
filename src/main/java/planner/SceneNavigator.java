@@ -39,9 +39,8 @@ public class SceneNavigator {
         FXMLLoader loader = new FXMLLoader(App.class.getResource("newPasswordPage.fxml"));
         Scene scene = new Scene(loader.load(), 700, 650);
         
-        // Get the controller and pass the data
-        NewPassword controller = loader.getController();  // Changed to NewPassword
-        controller.setData(email, resetToken);  // Changed from initialize() to setData()
+        NewPassword controller = loader.getController();
+        controller.setData(email, resetToken);
         
         stage.setScene(scene);
     } catch (IOException e) {

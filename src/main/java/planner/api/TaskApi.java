@@ -22,19 +22,19 @@ public class TaskApi {
     public void updateProgress(String token, Long taskId, int progress) throws Exception {
         String path = "/api/tasks/" + taskId + "/progress";
         var body = Map.of("progress", progress);
-        client.postJson(path, body,  Void.class, token);
+        client.putJson(path, body,  Void.class, token);
     }
 
     public void renameTask(String token, Long taskId, String newTitle) throws Exception{
         String path = "/api/tasks/" + taskId + "/rename";
         var body = Map.of("title", newTitle);
-        client.postJson(path, body, Void.class, token);
+        client.putJson(path, body, Void.class, token);
     }
 
     public void completeTask(String token, Long taskId) throws Exception {
-        String path = "api/tasks/" + taskId + "/complete";
+        String path = "/api/tasks/" + taskId + "/complete";
         var body = Map.of();
-        client.postJson(path, body, Void.class, token);
+        client.putJson(path, body, Void.class, token);
     }
 
     

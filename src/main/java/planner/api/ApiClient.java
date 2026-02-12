@@ -58,4 +58,30 @@ public class ApiClient {
 
         return mapper.readValue(res.body(), responseType);
     }
+
+    public <T> T putJson(String path, Object body, Class<T> responseType, String bearerToken)
+        throws IOException, InterruptedException {
+
+    String json = mapper.writeValueAsString(body);
+
+    HttpRequest.Builder builder = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + path))
+            .header("Content-Type", "application/json")
+            .PUT(HttpRequest.BodyPublishers.ofString(json));  // ← PUT not POST!
+
+    if (bearerToken != null && !bearerToken.isBlank()) {
+        builder.header("Authorization", "Bearer " + bearerToken);
+    }
+
+    HttpResponse<String> res = http.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+    if (res.statusCode() / 100 != 2) {
+        throw new RuntimeException("HTTP " + res.statusCode() + ": " + res.body());
+    }
+
+    if (responseType == Void.class) {
+        return null;
+    }
+
+    return mapper.readValue(res.body(), responseType);
+}
 }

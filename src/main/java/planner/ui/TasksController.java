@@ -2,6 +2,7 @@ package planner.ui;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableView;
@@ -29,6 +30,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class TasksController {
+
+    @FXML
+    private ContextMenu contextMenu;
 
    @FXML
     private Label dateL;
@@ -92,14 +96,12 @@ public class TasksController {
     return new SimpleIntegerProperty(index + 1).asObject();
     });
     
-    // 2. Task Column - shows title
     TableColumn<TaskDto, String> taskCol = new TableColumn<>("Task");
     taskCol.setPrefWidth(250);
     taskCol.setCellValueFactory(cellData -> 
         new SimpleStringProperty(cellData.getValue().title)
     );
     
-    // 3. Progress Column - shows progress bar + percentage
     TableColumn<TaskDto, Integer> progressCol = new TableColumn<>("Progress");
     progressCol.setPrefWidth(200);
     progressCol.setCellValueFactory(cellData -> 
@@ -107,7 +109,6 @@ public class TasksController {
     );
     progressCol.setCellFactory(col -> new ProgressBarTableCell());
     
-    // 4. Date Column - placeholder for now
     TableColumn<TaskDto, String> dateCol = new TableColumn<>("Date");
     dateCol.setPrefWidth(100);
     dateCol.setCellValueFactory(cellData -> {
@@ -117,21 +118,17 @@ public class TasksController {
     }
     
     try {
-        // Parse the date from backend format
         LocalDateTime dateTime = LocalDateTime.parse(dateStr);
         
-        // Format to dd-MM-yyyy
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         String formatted = dateTime.format(formatter);
         
         return new SimpleStringProperty(formatted);
     } catch (Exception e) {
-        // If parsing fails, return as-is
         return new SimpleStringProperty(dateStr);
     }
     });
     
-    // Add all columns to the table
     tasksTable.getColumns().addAll(priorityCol, taskCol, progressCol, dateCol);
 }
 
@@ -140,6 +137,8 @@ public class TasksController {
         Session.clear();
         SceneNavigator.goToLogin();
     }
+
+        
 
     private void loadTasks() {
 
@@ -151,6 +150,98 @@ public class TasksController {
             e.printStackTrace();
         }
     }
+
+        @FXML
+        void onMarkDone(ActionEvent event) throws Exception{
+            TaskDto selected = tasksTable.getSelectionModel().getSelectedItem();
+            
+            if (selected == null) {
+                statusLabel.setText("Please select a task");
+                return;
+            }
+            
+            try {
+                taskApi.completeTask(Session.getToken(), selected.id);
+                
+                loadTasks();
+                
+                statusLabel.setText("Task completed!");
+                
+            } catch (Exception e) {
+                statusLabel.setText("Error: " + e.getMessage());
+            }
+        }
+
+        @FXML
+        void onSetProgress(ActionEvent event) {
+            TaskDto selected = tasksTable.getSelectionModel().getSelectedItem();
+            
+            if (selected == null) {
+                statusLabel.setText("Please select a task");
+                return;
+            }
+
+            TextInputDialog newProgress = new TextInputDialog(String.valueOf(selected.progress));            
+            newProgress.setTitle("Update progress");
+            newProgress.setHeaderText("Update your progress (0 - 100)");
+            newProgress.setContentText("New progress : ");
+
+            Optional<String> result = newProgress.showAndWait();
+            if (!result.isPresent()) {
+            return;
+}
+            try {
+                int progress = Integer.parseInt(result.get().trim());
+
+                if (progress < 0 || progress > 100) {
+                statusLabel.setText("Progress must be between 0 and 100");
+                return;
+}
+                taskApi.updateProgress(Session.getToken(), selected.id, progress);
+                
+                loadTasks();
+                
+                statusLabel.setText("Updated progress");
+                
+            } catch (Exception e) {
+                statusLabel.setText("Error: " + e.getMessage());
+            }
+        }
+
+
+        @FXML
+        void renameTask(ActionEvent event) {
+
+            TaskDto selected = tasksTable.getSelectionModel().getSelectedItem();
+            
+            if (selected == null) {
+                statusLabel.setText("Please select a task");
+                return;
+            }
+
+            TextInputDialog newTitle = new TextInputDialog(String.valueOf(selected.progress));            
+            newTitle.setTitle("Rename task");
+            newTitle.setHeaderText("Rename your task");
+            newTitle.setContentText("New title : ");
+
+             Optional<String> result = newTitle.showAndWait();
+            if (!result.isPresent()) {
+                return;
+            }
+            
+            try {
+                taskApi.renameTask(Session.getToken(), selected.id, result.get() );
+                
+                loadTasks();
+                
+                statusLabel.setText("Rename successfull");
+                
+            } catch (Exception e) {
+                statusLabel.setText("Error: " + e.getMessage());
+            }
+        }
+    
+
 
     private static class ProgressBarTableCell extends TableCell<TaskDto, Integer> {
         private final ProgressBar progressBar = new ProgressBar();
@@ -174,5 +265,7 @@ public class TasksController {
                 setGraphic(container);
             }
         }
+
+        
     }
 }

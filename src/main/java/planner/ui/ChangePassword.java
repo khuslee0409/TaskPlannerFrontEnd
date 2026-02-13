@@ -2,6 +2,7 @@ package planner.ui;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -30,8 +31,20 @@ public class ChangePassword {
             String email = changePassEmail.getText().trim();
             
             if (email.isEmpty()) {
-                warningMessageChangePass.setText("Please enter your email");
-                warningMessageChangePass.setStyle("-fx-text-fill: red;");
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Empty Field");
+                alert.setHeaderText(null);
+                alert.setContentText("Email field is empty");
+                alert.showAndWait();
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Invalid Email");
+                alert.setHeaderText(null);
+                alert.setContentText("Please enter a valid email address");
+                alert.showAndWait();
                 return;
             }
             
@@ -41,7 +54,8 @@ public class ChangePassword {
             warningMessageChangePass.setStyle("-fx-text-fill: green;");
             
         } catch (Exception e) {
-            warningMessageChangePass.setText("Error: " + e.getMessage());
+            warningMessageChangePass.setText("Error");
+            System.out.println(e.getMessage());
             warningMessageChangePass.setStyle("-fx-text-fill: red;");
         }
     }
@@ -52,16 +66,36 @@ public class ChangePassword {
             String email = changePassEmail.getText().trim();
             String code = changePassCode.getText().trim();
             
-            if (email.isEmpty() || code.isEmpty()) {
-                warningMessageChangePass.setText("Please enter email and code");
-                warningMessageChangePass.setStyle("-fx-text-fill: red;");
+            if (email.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Empty Field");
+                alert.setHeaderText(null);
+                alert.setContentText("Email field is empty");
+                alert.showAndWait();
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Invalid Email");
+                alert.setHeaderText(null);
+                alert.setContentText("Please enter a valid email address");
+                alert.showAndWait();
+                return;
+            }
+            
+            if (code.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Empty Field");
+                alert.setHeaderText(null);
+                alert.setContentText("Reset code field is empty");
+                alert.showAndWait();
                 return;
             }
             
             VerifyResetCodeResponse response = verifyApi.verifyCode(email, code);
             
             if (response != null && response.getResetToken() != null) {
-                // Code verified successfully, navigate to new password page
                 SceneNavigator.goToNewPassword(response.getEmail(), response.getResetToken());
             } else {
                 warningMessageChangePass.setText("Invalid or expired code");
@@ -69,7 +103,7 @@ public class ChangePassword {
             }
             
         } catch (Exception e) {
-            warningMessageChangePass.setText("Error: " + e.getMessage());
+            warningMessageChangePass.setText("Error: No user exist with such email");
             warningMessageChangePass.setStyle("-fx-text-fill: red;");
         }
     }
@@ -77,5 +111,10 @@ public class ChangePassword {
     @FXML
     void goBack(ActionEvent event) {
         SceneNavigator.goToLogin();
+    }
+
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        return email.matches(emailRegex);
     }
 }

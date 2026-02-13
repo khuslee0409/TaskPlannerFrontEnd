@@ -3,6 +3,7 @@ package planner.api;
 import planner.api.dto.CreateTaskRequest;
 import planner.api.dto.TaskDto;
 import java.util.Map;
+import java.util.List;
 
 public class TaskApi {
     private final ApiClient client;
@@ -36,6 +37,11 @@ public class TaskApi {
         var body = Map.of();
         client.putJson(path, body, Void.class, token);
     }
+
+    public void reorder(String token, List<Long> orderedTaskIds) throws Exception {
+    String path = "/api/tasks/reorder";
+    client.putJson(path, orderedTaskIds, Void.class, token);  // ✓ Direct list
+}
 
     
 }

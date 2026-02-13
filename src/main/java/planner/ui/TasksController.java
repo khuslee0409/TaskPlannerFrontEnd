@@ -2,12 +2,17 @@ package planner.ui;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.cell.ProgressBarTableCell;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import planner.SceneNavigator;
 import planner.Session;
 import planner.api.ApiClient;
@@ -16,13 +21,14 @@ import planner.api.dto.TaskDto;
 
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.layout.HBox;
 import javafx.geometry.Pos;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
-
+import javafx.collections.ObservableList;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -61,18 +67,31 @@ public class TasksController {
         dialog.setContentText("Task title : ");
 
         Optional<String> result = dialog.showAndWait();
-        if (result.isPresent() && !result.get().trim().isEmpty()) {
-        String title = result.get().trim();
+        if (result.isPresent()) {
+            String title = result.get().trim();
+            
+            if (title.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Empty Field");
+                alert.setHeaderText(null);
+                alert.setContentText("Task title field is empty");
+                alert.showAndWait();
+                return;
+            }
         
-        try {
-            taskApi.createTask(Session.getToken(), title);
-            
-
-            loadTasks();
-            
-        } catch (Exception e) {
-            statusLabel.setText("Failed to create task: " + e.getMessage());
-        }
+            try {
+                taskApi.createTask(Session.getToken(), title);
+                
+                loadTasks();
+                
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.setContentText("Failed to create task");
+                System.out.println(e.getMessage());
+                alert.showAndWait();
+            }
         }
 
     }
@@ -86,6 +105,7 @@ public class TasksController {
         user.setText("Logged in as: " + Session.getUsername());
         setupTableColumns();
         loadTasks();
+        setupDragAndDrop();
     }
 
     private void setupTableColumns() {
@@ -146,7 +166,8 @@ public class TasksController {
             TaskDto[] tasks = taskApi.getTasks(Session.getToken());
             tasksTable.getItems().setAll(List.of(tasks));
         } catch (Exception e) {
-            statusLabel.setText("Failed to load tasks: " + e.getMessage());
+            statusLabel.setText("Failed to load tasks");
+            System.out.println(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -165,7 +186,11 @@ public class TasksController {
                 
                 loadTasks();
                 
-                statusLabel.setText("Task completed!");
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Success");
+                alert.setHeaderText(null);
+                alert.setContentText("Task completed!");
+                alert.showAndWait();
                 
             } catch (Exception e) {
                 statusLabel.setText("Error: " + e.getMessage());
@@ -194,17 +219,26 @@ public class TasksController {
                 int progress = Integer.parseInt(result.get().trim());
 
                 if (progress < 0 || progress > 100) {
-                statusLabel.setText("Progress must be between 0 and 100");
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Invalid Progress");
+                alert.setHeaderText(null);
+                alert.setContentText("Progress must be between 0 and 100");
+                alert.showAndWait();
                 return;
-}
+                }
                 taskApi.updateProgress(Session.getToken(), selected.id, progress);
                 
                 loadTasks();
-                
-                statusLabel.setText("Updated progress");
-                
+                        
             } catch (Exception e) {
-                statusLabel.setText("Error: " + e.getMessage());
+
+                Alert alertExcept = new Alert(Alert.AlertType.ERROR);
+                alertExcept.setTitle("Error");
+                alertExcept.setHeaderText(null);
+                alertExcept.setContentText("Progress must be between 0 and 100");
+                System.out.println(e.getMessage());
+                alertExcept.showAndWait();
+                
             }
         }
 
@@ -215,11 +249,15 @@ public class TasksController {
             TaskDto selected = tasksTable.getSelectionModel().getSelectedItem();
             
             if (selected == null) {
-                statusLabel.setText("Please select a task");
+                 Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("No task selected");
+                alert.setHeaderText(null);
+                alert.setContentText("Please select a task");
+                alert.showAndWait();
                 return;
             }
 
-            TextInputDialog newTitle = new TextInputDialog(String.valueOf(selected.progress));            
+            TextInputDialog newTitle = new TextInputDialog(String.valueOf(selected.title));            
             newTitle.setTitle("Rename task");
             newTitle.setHeaderText("Rename your task");
             newTitle.setContentText("New title : ");
@@ -229,15 +267,30 @@ public class TasksController {
                 return;
             }
             
+            String title = result.get().trim();
+            
+            if (title.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Empty Field");
+                alert.setHeaderText(null);
+                alert.setContentText("Task title field is empty");
+                alert.showAndWait();
+                return;
+            }
+            
             try {
-                taskApi.renameTask(Session.getToken(), selected.id, result.get() );
+                taskApi.renameTask(Session.getToken(), selected.id, title);
                 
                 loadTasks();
                 
-                statusLabel.setText("Rename successfull");
                 
             } catch (Exception e) {
-                statusLabel.setText("Error: " + e.getMessage());
+                statusLabel.setText("Error");
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error");
+                alert.setHeaderText(null);
+                alert.showAndWait();
+                return;
             }
         }
     
@@ -268,4 +321,60 @@ public class TasksController {
 
         
     }
+
+    private void setupDragAndDrop(){
+    tasksTable.setRowFactory(tv -> {
+        TableRow<TaskDto> row = new TableRow<>();
+
+        row.setOnDragDetected(event -> {
+            if (row.getItem() == null) return;  
+            
+            Dragboard dragboard = row.startDragAndDrop(TransferMode.MOVE);
+            ClipboardContent content = new ClipboardContent();
+            content.putString(String.valueOf(row.getIndex()));
+            dragboard.setContent(content);
+
+            event.consume();
+        });
+
+        row.setOnDragOver(event -> {
+            if (row.getItem() != null && event.getDragboard().hasString()){
+                event.acceptTransferModes(TransferMode.MOVE);
+            }  
+            
+            event.consume();
+
+            
+        });
+
+        row.setOnDragDropped(event -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            
+            if (db.hasString()) {
+                int draggedIndex = Integer.parseInt(db.getString());
+                int targetIndex = row.getIndex();
+                
+                ObservableList<TaskDto> items = tasksTable.getItems();
+                TaskDto draggedTask = items.remove(draggedIndex);
+                items.add(targetIndex, draggedTask);
+                List<Long> orderedIds = items.stream()
+                .map(task -> task.id)
+                .toList();
+                try {
+                    taskApi.reorder(Session.getToken(), orderedIds);
+                    success = true;
+                } catch (Exception e) {
+                    statusLabel.setText("Error reordering tasks");
+                    System.out.println(e.getMessage());
+                }
+            }
+            
+            event.setDropCompleted(success);
+            event.consume();
+        });
+
+        return row;
+    });
+}
 }

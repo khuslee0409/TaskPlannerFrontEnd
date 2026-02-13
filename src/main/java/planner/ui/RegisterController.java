@@ -2,6 +2,7 @@ package planner.ui;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import planner.SceneNavigator;
@@ -39,13 +40,57 @@ public class RegisterController {
     @FXML
     void addUser(ActionEvent event) {
 
-        String username = newUsername.getText();
-        String password = newPassword.getText();
-        String coPass = confirmPass.getText();
-        String theEmail = email.getText();
+        String username = newUsername.getText().trim();
+        String password = newPassword.getText().trim();
+        String coPass = confirmPass.getText().trim();
+        String theEmail = email.getText().trim();
 
+        // Check if username is empty
+        if (username.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Empty Field");
+            alert.setHeaderText(null);
+            alert.setContentText("Username field is empty");
+            alert.showAndWait();
+            return;
+        }
 
+        if (theEmail.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Empty Field");
+            alert.setHeaderText(null);
+            alert.setContentText("Email field is empty");
+            alert.showAndWait();
+            return;
+        }
 
+        // Validate email format
+        if (!isValidEmail(theEmail)) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Email");
+            alert.setHeaderText(null);
+            alert.setContentText("Please enter a valid email address");
+            alert.showAndWait();
+            return;
+        }
+
+        if (password.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Empty Field");
+            alert.setHeaderText(null);
+            alert.setContentText("Password field is empty");
+            alert.showAndWait();
+            return;
+        }
+
+        if (coPass.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Empty Field");
+            alert.setHeaderText(null);
+            alert.setContentText("Confirm Password field is empty");
+            alert.showAndWait();
+            return;
+        }
 
         try {
             if(coPass.equals(password)){
@@ -69,6 +114,10 @@ public class RegisterController {
         SceneNavigator.goToLogin();
     }
 
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+        return email.matches(emailRegex);
+    }
 
 }
 

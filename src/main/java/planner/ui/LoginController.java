@@ -28,7 +28,7 @@ public class LoginController {
         String password = passwordField.getText();
 
         if (username == null || username.isBlank() || password == null || password.isBlank()) {
-            statusLabel.setText("Enter username + password.");
+            statusLabel.setText("Please enter username and password.");
             return;
         }
 
@@ -37,7 +37,7 @@ public class LoginController {
             Session.set(username, res.getToken());
             SceneNavigator.goToTasks();
         } catch (Exception e) {
-            statusLabel.setText("Login failed: " + e.getMessage());
+            statusLabel.setText("Login failed, please enter correct credentials");
         }
     }
 

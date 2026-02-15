@@ -8,7 +8,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
         SceneNavigator.init(stage);
-        SceneNavigator.goToLogin();
+        SceneNavigator.goToLandingPage();
         stage.setTitle("Student Planner");
         stage.show();
     }

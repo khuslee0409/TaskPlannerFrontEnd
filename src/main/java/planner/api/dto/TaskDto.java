@@ -9,7 +9,7 @@ public class TaskDto {
     public int progress;
     public boolean completed;
     public int sortOrder;
-    public String createdAt;
+    public String deadline;
 
 
     @Override

@@ -16,8 +16,8 @@ public class TaskApi {
         return client.getJson("/api/tasks", TaskDto[].class, token);
     }
     
-    public TaskDto createTask(String token, String title) throws Exception {
-        return client.postJson("/api/tasks", new CreateTaskRequest(title), TaskDto.class, token);
+    public TaskDto createTask(String token, String title, String deadline) throws Exception {
+        return client.postJson("/api/tasks", new CreateTaskRequest(title, deadline), TaskDto.class, token);
     }
 
     public void updateProgress(String token, Long taskId, int progress) throws Exception {
@@ -40,7 +40,7 @@ public class TaskApi {
 
     public void reorder(String token, List<Long> orderedTaskIds) throws Exception {
     String path = "/api/tasks/reorder";
-    client.putJson(path, orderedTaskIds, Void.class, token);  // ✓ Direct list
+    client.putJson(path, orderedTaskIds, Void.class, token);
 }
 
     

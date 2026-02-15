@@ -14,6 +14,10 @@ public class SceneNavigator {
         stage = primaryStage;
     }
 
+     public static void goToLandingPage() {
+        setScene("landingPage.fxml", 700, 650);
+    }
+
     public static void goToLogin() {
         setScene("login.fxml", 700, 650);
     }

@@ -2,34 +2,28 @@ package planner.ui;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.ProgressBarTableCell;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.geometry.Pos;
+import javafx.geometry.Insets;
 import planner.SceneNavigator;
 import planner.Session;
 import planner.api.ApiClient;
 import planner.api.TaskApi;
 import planner.api.dto.TaskDto;
 
-import javafx.scene.control.TableView;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.layout.HBox;
-import javafx.geometry.Pos;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
+import javafx.collections.FXCollections;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -61,14 +55,63 @@ public class TasksController {
 
     @FXML
     void addTask(ActionEvent event) {
-        TextInputDialog dialog = new TextInputDialog();
+        Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("New Task");
-        dialog.setHeaderText("Create a new task");
-        dialog.setContentText("Task title : ");
-
-        Optional<String> result = dialog.showAndWait();
-        if (result.isPresent()) {
-            String title = result.get().trim();
+        dialog.setHeaderText("Create a new task with deadline");
+        
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        
+        TextField titleField = new TextField();
+        titleField.setPromptText("Task title");
+        
+        DatePicker datePicker = new DatePicker();
+        datePicker.setValue(LocalDate.now());
+        
+        datePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisable(empty || date.isBefore(LocalDate.now()));
+            }
+        });
+        
+        ComboBox<Integer> hourBox = new ComboBox<>(FXCollections.observableArrayList(
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+        ));
+        hourBox.setValue(12);
+        hourBox.setPrefWidth(70);
+        
+        ComboBox<String> minuteBox = new ComboBox<>(FXCollections.observableArrayList(
+            "00", "15", "30", "45"
+        ));
+        minuteBox.setValue("00");
+        minuteBox.setPrefWidth(70);
+        minuteBox.setEditable(true);
+        
+        ComboBox<String> ampmBox = new ComboBox<>(FXCollections.observableArrayList("AM", "PM"));
+        ampmBox.setValue("PM");
+        ampmBox.setPrefWidth(70);
+        
+        HBox timeBox = new HBox(5, hourBox, new Label(":"), minuteBox, ampmBox);
+        
+        grid.add(new Label("Title:"), 0, 0);
+        grid.add(titleField, 1, 0);
+        grid.add(new Label("Date:"), 0, 1);
+        grid.add(datePicker, 1, 1);
+        grid.add(new Label("Time:"), 0, 2);
+        grid.add(timeBox, 1, 2);
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        Optional<ButtonType> result = dialog.showAndWait();
+        
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            String title = titleField.getText().trim();
             
             if (title.isEmpty()) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -78,22 +121,61 @@ public class TasksController {
                 alert.showAndWait();
                 return;
             }
-        
-            try {
-                taskApi.createTask(Session.getToken(), title);
+            
+            if (datePicker.getValue() == null) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Invalid Date");
+                alert.setHeaderText(null);
+                alert.setContentText("Please select a date");
+                alert.showAndWait();
+                return;
+            }
+            
+            LocalDate date = datePicker.getValue();
+            int hour = hourBox.getValue();
+            String minute = minuteBox.getValue();
+            String ampm = ampmBox.getValue();
+            
+            if (date.equals(LocalDate.now())) {
+                LocalDateTime now = LocalDateTime.now();
                 
+                int hour24 = hour;
+                if (ampm.equals("PM") && hour != 12) {
+                    hour24 = hour + 12;
+                } else if (ampm.equals("AM") && hour == 12) {
+                    hour24 = 0;
+                }
+                
+                int selectedMinute = Integer.parseInt(minute);
+                LocalDateTime selectedDateTime = LocalDateTime.of(date, java.time.LocalTime.of(hour24, selectedMinute));
+                
+                if (selectedDateTime.isBefore(now)) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Invalid Time");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Cannot set deadline in the past");
+                    alert.showAndWait();
+                    return;
+                }
+            }
+            
+            String deadline = String.format("%02d-%02d-%04d %02d:%s %s",
+                date.getDayOfMonth(), date.getMonthValue(), date.getYear(),
+                hour, minute, ampm);
+            
+            try {
+                taskApi.createTask(Session.getToken(), title, deadline);
                 loadTasks();
                 
             } catch (Exception e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText(null);
-                alert.setContentText("Failed to create task");
+                alert.setContentText("Failed to create task: " + e.getMessage());
                 System.out.println(e.getMessage());
                 alert.showAndWait();
             }
         }
-
     }
     @FXML private TableView<TaskDto> tasksTable;
 
@@ -129,27 +211,38 @@ public class TasksController {
     );
     progressCol.setCellFactory(col -> new ProgressBarTableCell());
     
-    TableColumn<TaskDto, String> dateCol = new TableColumn<>("Date");
-    dateCol.setPrefWidth(100);
-    dateCol.setCellValueFactory(cellData -> {
-    String dateStr = cellData.getValue().createdAt;
+    TableColumn<TaskDto, String> deadlineCol = new TableColumn<>("Deadline");
+    deadlineCol.setPrefWidth(170);
+    deadlineCol.setCellValueFactory(cellData -> {
+    String dateStr = cellData.getValue().deadline;
     if (dateStr == null || dateStr.isEmpty()) {
         return new SimpleStringProperty("N/A");
     }
     
     try {
-        LocalDateTime dateTime = LocalDateTime.parse(dateStr);
+        LocalDateTime dateTime;
         
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        if (dateStr.contains("T")) {
+            dateTime = LocalDateTime.parse(dateStr);
+        } else {
+            long timestamp = Long.parseLong(dateStr);
+            dateTime = LocalDateTime.ofInstant(
+                java.time.Instant.ofEpochMilli(timestamp), 
+                java.time.ZoneId.systemDefault()
+            );
+        }
+        
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm a");
         String formatted = dateTime.format(formatter);
         
         return new SimpleStringProperty(formatted);
     } catch (Exception e) {
+        System.err.println("Failed to parse deadline: " + dateStr + " - " + e.getMessage());
         return new SimpleStringProperty(dateStr);
     }
     });
     
-    tasksTable.getColumns().addAll(priorityCol, taskCol, progressCol, dateCol);
+    tasksTable.getColumns().addAll(priorityCol, taskCol, progressCol, deadlineCol);
 }
 
     @FXML

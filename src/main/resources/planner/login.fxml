@@ -8,25 +8,22 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="700.0" spacing="10" style="-fx-padding: 16;" stylesheets="@magic.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="planner.ui.LoginController">
+<VBox alignment="CENTER" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="700.0" spacing="16" style="-fx-padding: 40;" stylesheets="@magic.css" xmlns="http://javafx.com/javafx/24.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="planner.ui.LoginController">
 
-    <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="9.0" prefWidth="668.0" style="-fx-padding: 40;" text="Login">
-      <font>
-         <Font name="Lucida Console" size="36.0" />
-      </font></Label>
+    <Label styleClass="title" alignment="CENTER" contentDisplay="CENTER" style="-fx-padding: 20;" text="Login" />
 
-    <TextField fx:id="usernameField" prefHeight="28.0" prefWidth="668.0" promptText="Username">
+    <TextField fx:id="usernameField" maxWidth="450" promptText="Username">
       <font>
-         <Font name="Lucida Console" size="20.0" />
+         <Font size="16.0" />
       </font></TextField>
-    <PasswordField fx:id="passwordField" prefWidth="668.0" promptText="Password">
+    <PasswordField fx:id="passwordField" maxWidth="450" promptText="Password">
       <font>
-         <Font name="Lucida Console" size="20.0" />
+         <Font size="16.0" />
       </font></PasswordField>
    <Hyperlink alignment="CENTER" onAction="#forgotPassword" text="Forgot password ?" />
 
     <Label fx:id="statusLabel" textFill="red" />
-   <Button mnemonicParsing="false" onAction="#onRegister" prefHeight="36.0" prefWidth="90.0" text="Register" />
+   <Button mnemonicParsing="false" onAction="#onRegister" minWidth="120" text="Register" />
 
-    <Button onAction="#onLogin" prefHeight="36.0" prefWidth="92.0" text="Login" />
+    <Button onAction="#onLogin" minWidth="120" text="Login" />
 </VBox>

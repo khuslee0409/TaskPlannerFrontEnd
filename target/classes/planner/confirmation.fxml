@@ -10,17 +10,17 @@
    <children>
       <Label fx:id="confirmLabel" alignment="CENTER" contentDisplay="CENTER" layoutX="5.0" layoutY="101.0" prefHeight="15.0" prefWidth="683.0" text="Please enter the code that is sent to your email address" textAlignment="CENTER">
          <font>
-            <Font name="Lucida Console" size="14.0" />
+            <Font size="14.0" />
          </font>
       </Label>
       <TextField fx:id="verifyCode" layoutX="247.0" layoutY="169.0" prefHeight="61.0" prefWidth="206.0" promptText="Enter code">
          <font>
-            <Font name="Lucida Console" size="27.0" />
+            <Font size="24.0" />
          </font>
       </TextField>
       <Button layoutX="217.0" layoutY="297.0" mnemonicParsing="false" onAction="#SubmitCode" text="Proceed">
          <font>
-            <Font name="Lucida Console" size="16.0" />
+            <Font size="16.0" />
          </font>
       </Button>
       <Button layoutX="374.0" layoutY="297.0" mnemonicParsing="false" onAction="#goToLogin" text="Go to login" />

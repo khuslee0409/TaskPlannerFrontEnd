@@ -18,13 +18,18 @@ import planner.api.ApiClient;
 import planner.api.TaskApi;
 import planner.api.dto.TaskDto;
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.collections.FXCollections;
+import javafx.util.Duration;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
@@ -188,18 +193,28 @@ public class TasksController {
         setupTableColumns();
         loadTasks();
         setupDragAndDrop();
+        startAutoRefresh();
+    }
+
+    private void startAutoRefresh() {
+        // Refresh table every 60 seconds to update overdue task colors
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(60), event -> {
+            tasksTable.refresh();
+        }));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
     }
 
     private void setupTableColumns() {
     TableColumn<TaskDto, Integer> priorityCol = new TableColumn<>("Priority");
-    priorityCol.setPrefWidth(80);
+    priorityCol.setPrefWidth(100);
     priorityCol.setCellValueFactory(cellData -> {
     int index = tasksTable.getItems().indexOf(cellData.getValue());
     return new SimpleIntegerProperty(index + 1).asObject();
     });
     
     TableColumn<TaskDto, String> taskCol = new TableColumn<>("Task");
-    taskCol.setPrefWidth(250);
+    taskCol.setPrefWidth(200);
     taskCol.setCellValueFactory(cellData -> 
         new SimpleStringProperty(cellData.getValue().title)
     );
@@ -270,7 +285,11 @@ public class TasksController {
             TaskDto selected = tasksTable.getSelectionModel().getSelectedItem();
             
             if (selected == null) {
-                statusLabel.setText("Please select a task");
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("No task selected");
+                alert.setHeaderText(null);
+                alert.setContentText("Please select a task");
+                alert.showAndWait();
                 return;
             }
             
@@ -295,7 +314,11 @@ public class TasksController {
             TaskDto selected = tasksTable.getSelectionModel().getSelectedItem();
             
             if (selected == null) {
-                statusLabel.setText("Please select a task");
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("No task selected");
+                alert.setHeaderText(null);
+                alert.setContentText("Please select a task");
+                alert.showAndWait();
                 return;
             }
 
@@ -417,7 +440,45 @@ public class TasksController {
 
     private void setupDragAndDrop(){
     tasksTable.setRowFactory(tv -> {
-        TableRow<TaskDto> row = new TableRow<>();
+        TableRow<TaskDto> row = new TableRow<>() {
+            @Override
+            protected void updateItem(TaskDto task, boolean empty){
+                super.updateItem(task, empty);
+                
+                if(empty || task == null){
+                    setStyle("");
+                    return;
+                }
+
+                String deadlineStr = task.deadline;
+
+                if(deadlineStr == null || deadlineStr.isEmpty()){
+                    setStyle("");
+                    return;
+                }
+
+                try{
+                    LocalDateTime dateTime;
+                    if (deadlineStr.contains("T")) {
+                        dateTime = LocalDateTime.parse(deadlineStr);
+                    } else {
+                        long timestamp = Long.parseLong(deadlineStr);
+                        dateTime = LocalDateTime.ofInstant(
+                            java.time.Instant.ofEpochMilli(timestamp), 
+                            java.time.ZoneId.systemDefault()
+                        );
+                    }
+
+                    if (dateTime.isBefore(LocalDateTime.now())) {
+                        setStyle("-fx-background-color: #ffcccc;");
+                    } else {
+                        setStyle("");
+                    }
+                } catch (Exception e) {
+                    setStyle("");
+                }
+            }
+        };
 
         row.setOnDragDetected(event -> {
             if (row.getItem() == null) return;  

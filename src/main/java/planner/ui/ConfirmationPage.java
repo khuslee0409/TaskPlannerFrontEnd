@@ -5,6 +5,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
 import planner.SceneNavigator;
 import planner.Session;
 import planner.api.ApiClient;
@@ -16,7 +18,7 @@ public class ConfirmationPage {
 
     
 
-    private final VerifyApi api = new VerifyApi(new ApiClient("http://localhost:8080"));
+    private final VerifyApi api = new VerifyApi(new ApiClient("https://taskplanner-production-7e23.up.railway.app"));
 
     @FXML
     private TextField verifyCode;
@@ -34,6 +36,7 @@ public class ConfirmationPage {
             alert.setTitle("Empty Field");
             alert.setHeaderText(null);
             alert.setContentText("Verification code field is empty");
+            setAlertIcon(alert);
             alert.showAndWait();
             return;
         }
@@ -43,6 +46,7 @@ public class ConfirmationPage {
             alert.setTitle("Error");
             alert.setHeaderText(null);
             alert.setContentText("Email not found. Please register again.");
+            setAlertIcon(alert);
             alert.showAndWait();
             return;
         }
@@ -56,6 +60,7 @@ public class ConfirmationPage {
             alert.setHeaderText(null);
             alert.setContentText("Invalid verification code");
             System.out.println(e.getMessage());
+            setAlertIcon(alert);
             alert.showAndWait();
             e.printStackTrace();
         }
@@ -64,6 +69,11 @@ public class ConfirmationPage {
     @FXML
     void goToLogin(ActionEvent event) {
         SceneNavigator.goToLogin();
+    }
+
+    private void setAlertIcon(Alert alert) {
+    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+    alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/planner/icon.png")));
     }
 
 }

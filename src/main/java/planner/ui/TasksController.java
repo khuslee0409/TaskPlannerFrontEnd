@@ -4,12 +4,14 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.ProgressBarTableCell;
+import javafx.scene.image.Image;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.Stage;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 import planner.SceneNavigator;
@@ -123,6 +125,7 @@ public class TasksController {
                 alert.setTitle("Empty Field");
                 alert.setHeaderText(null);
                 alert.setContentText("Task title field is empty");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -132,6 +135,7 @@ public class TasksController {
                 alert.setTitle("Invalid Date");
                 alert.setHeaderText(null);
                 alert.setContentText("Please select a date");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -159,6 +163,7 @@ public class TasksController {
                     alert.setTitle("Invalid Time");
                     alert.setHeaderText(null);
                     alert.setContentText("Cannot set deadline in the past");
+                    setAlertIcon(alert);
                     alert.showAndWait();
                     return;
                 }
@@ -178,6 +183,7 @@ public class TasksController {
                 alert.setHeaderText(null);
                 alert.setContentText("Failed to create task: " + e.getMessage());
                 System.out.println(e.getMessage());
+                setAlertIcon(alert);
                 alert.showAndWait();
             }
         }
@@ -185,7 +191,7 @@ public class TasksController {
     @FXML private TableView<TaskDto> tasksTable;
 
     private final TaskApi taskApi =
-            new TaskApi(new ApiClient("http://localhost:8080"));
+            new TaskApi(new ApiClient("https://taskplanner-production-7e23.up.railway.app"));
 
     @FXML
     private void initialize() {
@@ -289,6 +295,7 @@ public class TasksController {
                 alert.setTitle("No task selected");
                 alert.setHeaderText(null);
                 alert.setContentText("Please select a task");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -302,6 +309,7 @@ public class TasksController {
                 alert.setTitle("Success");
                 alert.setHeaderText(null);
                 alert.setContentText("Task completed!");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 
             } catch (Exception e) {
@@ -318,6 +326,7 @@ public class TasksController {
                 alert.setTitle("No task selected");
                 alert.setHeaderText(null);
                 alert.setContentText("Please select a task");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -339,6 +348,7 @@ public class TasksController {
                 alert.setTitle("Invalid Progress");
                 alert.setHeaderText(null);
                 alert.setContentText("Progress must be between 0 and 100");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
                 }
@@ -353,6 +363,7 @@ public class TasksController {
                 alertExcept.setHeaderText(null);
                 alertExcept.setContentText("Progress must be between 0 and 100");
                 System.out.println(e.getMessage());
+                setAlertIcon(alertExcept);
                 alertExcept.showAndWait();
                 
             }
@@ -369,6 +380,7 @@ public class TasksController {
                 alert.setTitle("No task selected");
                 alert.setHeaderText(null);
                 alert.setContentText("Please select a task");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -390,6 +402,7 @@ public class TasksController {
                 alert.setTitle("Empty Field");
                 alert.setHeaderText(null);
                 alert.setContentText("Task title field is empty");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -405,6 +418,7 @@ public class TasksController {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText(null);
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -531,4 +545,9 @@ public class TasksController {
         return row;
     });
 }
+
+    private void setAlertIcon(Alert alert) {
+            Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+            alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/planner/icon.png")));
+    }
 }

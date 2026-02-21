@@ -1,0 +1,2 @@
+JAVA_VERSION="25.0.1"
+MODULES="java.base com.fasterxml.jackson.annotation com.fasterxml.jackson.core java.datatransfer java.xml java.prefs java.desktop com.fasterxml.jackson.databind java.net.http java.scripting javafx.base jdk.unsupported javafx.graphics javafx.controls javafx.fxml planner"

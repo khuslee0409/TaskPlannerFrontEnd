@@ -6,6 +6,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
 import planner.SceneNavigator;
 import planner.api.ApiClient;
 import planner.api.ForgotPassword;
@@ -13,8 +15,8 @@ import planner.api.VerifyResetCodeApi;
 import planner.api.dto.VerifyResetCodeResponse;
 
 public class ChangePassword {
-    private final ForgotPassword api = new ForgotPassword(new ApiClient("http://localhost:8080"));
-    private final VerifyResetCodeApi verifyApi = new VerifyResetCodeApi(new ApiClient("http://localhost:8080"));
+    private final ForgotPassword api = new ForgotPassword(new ApiClient("https://taskplanner-production-7e23.up.railway.app"));
+    private final VerifyResetCodeApi verifyApi = new VerifyResetCodeApi(new ApiClient("https://taskplanner-production-7e23.up.railway.app"));
 
     @FXML
     private PasswordField changePassCode;
@@ -35,6 +37,7 @@ public class ChangePassword {
                 alert.setTitle("Empty Field");
                 alert.setHeaderText(null);
                 alert.setContentText("Email field is empty");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -44,6 +47,7 @@ public class ChangePassword {
                 alert.setTitle("Invalid Email");
                 alert.setHeaderText(null);
                 alert.setContentText("Please enter a valid email address");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -71,6 +75,7 @@ public class ChangePassword {
                 alert.setTitle("Empty Field");
                 alert.setHeaderText(null);
                 alert.setContentText("Email field is empty");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -80,6 +85,7 @@ public class ChangePassword {
                 alert.setTitle("Invalid Email");
                 alert.setHeaderText(null);
                 alert.setContentText("Please enter a valid email address");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -89,6 +95,7 @@ public class ChangePassword {
                 alert.setTitle("Empty Field");
                 alert.setHeaderText(null);
                 alert.setContentText("Reset code field is empty");
+                setAlertIcon(alert);
                 alert.showAndWait();
                 return;
             }
@@ -116,5 +123,18 @@ public class ChangePassword {
     private boolean isValidEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         return email.matches(emailRegex);
+    }
+
+    private void setAlertIcon(Alert alert) {
+        try {
+            alert.setOnShown(event -> {
+                try {
+                    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                    alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/planner/icon.png")));
+                } catch (Exception e) {
+                }
+            });
+        } catch (Exception e) {
+        }
     }
 }

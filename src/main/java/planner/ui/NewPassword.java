@@ -10,7 +10,7 @@ import planner.api.ResetCode;
 
 public class NewPassword {
     
-    private final ResetCode resetApi = new ResetCode(new ApiClient("http://localhost:8080"));
+    private final ResetCode resetApi = new ResetCode(new ApiClient("https://taskplanner-production-7e23.up.railway.app"));
     
     private String email;
     private String resetToken;
@@ -24,7 +24,6 @@ public class NewPassword {
     @FXML
     private Label warningMessageNewPass;
     
-    // Changed from initialize() to setData()
     public void setData(String email, String resetToken) {
         this.email = email;
         this.resetToken = resetToken;
@@ -54,7 +53,6 @@ public class NewPassword {
                 return;
             }
             
-            // Reset password using the stored email and token
             resetApi.setNewPassword(email, resetToken, newPassword);
             
             warningMessageNewPass.setText("Password reset successfully!");

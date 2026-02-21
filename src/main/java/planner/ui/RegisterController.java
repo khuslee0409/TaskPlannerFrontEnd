@@ -5,6 +5,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
 import planner.SceneNavigator;
 import planner.Session;
 import planner.api.ApiClient;
@@ -35,7 +37,7 @@ public class RegisterController {
     @FXML
     private TextField newUsername;
 
-    private final RegisterApi registerApi = new RegisterApi(new ApiClient("http://localhost:8080"));
+    private final RegisterApi registerApi = new RegisterApi(new ApiClient("https://taskplanner-production-7e23.up.railway.app"));
 
     @FXML
     void addUser(ActionEvent event) {
@@ -45,12 +47,12 @@ public class RegisterController {
         String coPass = confirmPass.getText().trim();
         String theEmail = email.getText().trim();
 
-        // Check if username is empty
         if (username.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Empty Field");
             alert.setHeaderText(null);
             alert.setContentText("Username field is empty");
+            setAlertIcon(alert);
             alert.showAndWait();
             return;
         }
@@ -60,6 +62,7 @@ public class RegisterController {
             alert.setTitle("Empty Field");
             alert.setHeaderText(null);
             alert.setContentText("Email field is empty");
+            setAlertIcon(alert);
             alert.showAndWait();
             return;
         }
@@ -70,6 +73,7 @@ public class RegisterController {
             alert.setTitle("Invalid Email");
             alert.setHeaderText(null);
             alert.setContentText("Please enter a valid email address");
+            setAlertIcon(alert);
             alert.showAndWait();
             return;
         }
@@ -79,6 +83,7 @@ public class RegisterController {
             alert.setTitle("Empty Field");
             alert.setHeaderText(null);
             alert.setContentText("Password field is empty");
+            setAlertIcon(alert);
             alert.showAndWait();
             return;
         }
@@ -88,6 +93,7 @@ public class RegisterController {
             alert.setTitle("Empty Field");
             alert.setHeaderText(null);
             alert.setContentText("Confirm Password field is empty");
+            setAlertIcon(alert);
             alert.showAndWait();
             return;
         }
@@ -117,6 +123,19 @@ public class RegisterController {
     private boolean isValidEmail(String email) {
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
         return email.matches(emailRegex);
+    }
+
+    private void setAlertIcon(Alert alert) {
+        try {
+            alert.setOnShown(event -> {
+                try {
+                    Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
+                    alertStage.getIcons().add(new Image(getClass().getResourceAsStream("/planner/icon.png")));
+                } catch (Exception e) {
+                }
+            });
+        } catch (Exception e) {
+        }
     }
 
 }

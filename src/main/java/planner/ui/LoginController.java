@@ -18,7 +18,7 @@ public class LoginController {
     @FXML private Label statusLabel;
 
     private final AuthApi authApi =
-            new AuthApi(new ApiClient("http://localhost:8080"));
+            new AuthApi(new ApiClient("https://taskplanner-production-7e23.up.railway.app"));
 
     @FXML
     private void onLogin() {

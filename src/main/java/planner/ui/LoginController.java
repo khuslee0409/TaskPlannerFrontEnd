@@ -1,5 +1,6 @@
 package planner.ui;
 
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -22,7 +23,7 @@ public class LoginController {
 
     @FXML
     private void onLogin() {
-        statusLabel.setText("");
+        statusLabel.setText("Logging in...");
 
         String username = usernameField.getText();
         String password = passwordField.getText();
@@ -32,13 +33,24 @@ public class LoginController {
             return;
         }
 
-        try {
-            AuthResponse res = authApi.login(username, password);
+        Task<AuthResponse> loginTask = new Task<>() {
+            @Override
+            protected AuthResponse call() throws Exception {
+                return authApi.login(username, password);
+            }
+        };
+
+        loginTask.setOnSucceeded(event -> {
+            AuthResponse res = loginTask.getValue();
             Session.set(username, res.getToken());
             SceneNavigator.goToTasks();
-        } catch (Exception e) {
+        });
+
+        loginTask.setOnFailed(event -> {
             statusLabel.setText("Login failed, please enter correct credentials");
-        }
+        });
+
+        new Thread(loginTask).start();
     }
 
      @FXML

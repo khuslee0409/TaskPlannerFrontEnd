@@ -1,5 +1,6 @@
 package planner.ui;
 
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -29,90 +30,113 @@ public class ChangePassword {
 
     @FXML
     void sendCode(ActionEvent event) {
-        try {
-            String email = changePassEmail.getText().trim();
-            
-            if (email.isEmpty()) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Empty Field");
-                alert.setHeaderText(null);
-                alert.setContentText("Email field is empty");
-                setAlertIcon(alert);
-                alert.showAndWait();
-                return;
+        String email = changePassEmail.getText().trim();
+        
+        if (email.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Empty Field");
+            alert.setHeaderText(null);
+            alert.setContentText("Email field is empty");
+            setAlertIcon(alert);
+            alert.showAndWait();
+            return;
+        }
+        
+        if (!isValidEmail(email)) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Email");
+            alert.setHeaderText(null);
+            alert.setContentText("Please enter a valid email address");
+            setAlertIcon(alert);
+            alert.showAndWait();
+            return;
+        }
+        
+        warningMessageChangePass.setText("Sending code...");
+        warningMessageChangePass.setStyle("-fx-text-fill: blue;");
+
+        Task<Void> sendCodeTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                api.forgotPassword(email);
+                return null;
             }
-            
-            if (!isValidEmail(email)) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Invalid Email");
-                alert.setHeaderText(null);
-                alert.setContentText("Please enter a valid email address");
-                setAlertIcon(alert);
-                alert.showAndWait();
-                return;
-            }
-            
-            api.forgotPassword(email);
-            
+        };
+
+        sendCodeTask.setOnSucceeded(e -> {
             warningMessageChangePass.setText("Reset code sent to your email!");
             warningMessageChangePass.setStyle("-fx-text-fill: green;");
-            
-        } catch (Exception e) {
+        });
+
+        sendCodeTask.setOnFailed(e -> {
             warningMessageChangePass.setText("Error");
-            System.out.println(e.getMessage());
             warningMessageChangePass.setStyle("-fx-text-fill: red;");
-        }
+        });
+
+        new Thread(sendCodeTask).start();
     }
 
     @FXML
     void submitCode(ActionEvent event) {
-        try {
-            String email = changePassEmail.getText().trim();
-            String code = changePassCode.getText().trim();
-            
-            if (email.isEmpty()) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Empty Field");
-                alert.setHeaderText(null);
-                alert.setContentText("Email field is empty");
-                setAlertIcon(alert);
-                alert.showAndWait();
-                return;
+        String email = changePassEmail.getText().trim();
+        String code = changePassCode.getText().trim();
+        
+        if (email.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Empty Field");
+            alert.setHeaderText(null);
+            alert.setContentText("Email field is empty");
+            setAlertIcon(alert);
+            alert.showAndWait();
+            return;
+        }
+        
+        if (!isValidEmail(email)) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Invalid Email");
+            alert.setHeaderText(null);
+            alert.setContentText("Please enter a valid email address");
+            setAlertIcon(alert);
+            alert.showAndWait();
+            return;
+        }
+        
+        if (code.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Empty Field");
+            alert.setHeaderText(null);
+            alert.setContentText("Reset code field is empty");
+            setAlertIcon(alert);
+            alert.showAndWait();
+            return;
+        }
+        
+        warningMessageChangePass.setText("Verifying code...");
+        warningMessageChangePass.setStyle("-fx-text-fill: blue;");
+
+        Task<VerifyResetCodeResponse> verifyTask = new Task<>() {
+            @Override
+            protected VerifyResetCodeResponse call() throws Exception {
+                return verifyApi.verifyCode(email, code);
             }
-            
-            if (!isValidEmail(email)) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Invalid Email");
-                alert.setHeaderText(null);
-                alert.setContentText("Please enter a valid email address");
-                setAlertIcon(alert);
-                alert.showAndWait();
-                return;
-            }
-            
-            if (code.isEmpty()) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Empty Field");
-                alert.setHeaderText(null);
-                alert.setContentText("Reset code field is empty");
-                setAlertIcon(alert);
-                alert.showAndWait();
-                return;
-            }
-            
-            VerifyResetCodeResponse response = verifyApi.verifyCode(email, code);
-            
+        };
+
+        verifyTask.setOnSucceeded(e -> {
+            VerifyResetCodeResponse response = verifyTask.getValue();
             if (response != null && response.getResetToken() != null) {
                 SceneNavigator.goToNewPassword(response.getEmail(), response.getResetToken());
             } else {
                 warningMessageChangePass.setText("Invalid or expired code");
                 warningMessageChangePass.setStyle("-fx-text-fill: red;");
             }
-            
-        } catch (Exception e) {
+        });
+
+        verifyTask.setOnFailed(e -> {
             warningMessageChangePass.setText("Error: No user exist with such email");
             warningMessageChangePass.setStyle("-fx-text-fill: red;");
-        }
+        });
+
+        new Thread(verifyTask).start();
     }
 
     @FXML

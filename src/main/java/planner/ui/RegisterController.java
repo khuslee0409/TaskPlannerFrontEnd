@@ -1,5 +1,6 @@
 package planner.ui;
 
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -98,20 +99,52 @@ public class RegisterController {
             return;
         }
 
-        try {
-            if(coPass.equals(password)){
-                registerApi.register(username, password, theEmail);
-                Session.setPendingEmail(theEmail);
-                statusLabel.setText("Register successfull"); 
-            }else{
-                statusLabel.setText("Passwords don't match");
-            }
-           
-        } catch (Exception e) {
-            statusLabel.setText("Login failed: " + e.getMessage());
+        if(!coPass.equals(password)){
+            statusLabel.setText("Passwords don't match");
+            return;
         }
 
-        SceneNavigator.goToConfirmationPage();
+        statusLabel.setText("Registering...");
+
+        Task<Void> registerTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                registerApi.register(username, password, theEmail);
+                return null;
+            }
+        };
+
+        registerTask.setOnSucceeded(e -> {
+            // Normalize email before storing in session (trim and lowercase)
+            String normalizedEmail = theEmail.trim().toLowerCase();
+            Session.setPendingEmail(normalizedEmail);
+            statusLabel.setText("Register successfull");
+            SceneNavigator.goToConfirmationPage();
+        });
+
+        registerTask.setOnFailed(e -> {
+            Throwable ex = registerTask.getException();
+            String errorMsg = "Registration failed";
+            if (ex != null && ex.getMessage() != null && !ex.getMessage().isEmpty()) {
+                errorMsg = "Registration failed: " + ex.getMessage();
+            }
+            statusLabel.setText(errorMsg);
+            
+            // Also show an alert with more details
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Registration Failed");
+            alert.setHeaderText(null);
+            alert.setContentText(errorMsg);
+            setAlertIcon(alert);
+            alert.showAndWait();
+            
+            // Print full stack trace for debugging
+            if (ex != null) {
+                ex.printStackTrace();
+            }
+        });
+
+        new Thread(registerTask).start();
 
     }
 

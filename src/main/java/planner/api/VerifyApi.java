@@ -11,15 +11,19 @@ public class VerifyApi {
         theClient = client;
     }
 
-    public void verifyCode(String email, String code) throws Exception{
-    try {
-        theClient.postJson("/api/auth/verify-code", new VerifyRequest(email, code), String.class, null);
-    } catch (Exception e) {
-        if (!e.getMessage().contains("Wrong code")) {
+    public boolean verifyCode(String email, String code) throws Exception {
+        try {
+            theClient.postJson("/api/auth/verify-code", new VerifyRequest(email, code), Void.class, null);
+            return true;  // API call succeeded, code is valid
+        } catch (Exception e) {
+            // Check if it's a "wrong code" error vs a real system error
+            if (e.getMessage() != null && (e.getMessage().contains("Wrong code") || e.getMessage().contains("400"))) {
+                return false;  // Code is wrong, but user exists
+            }
+            // Real error (network, server down, user not found, etc.)
             throw e;
         }
     }
-}
 
     
 }

@@ -7,11 +7,14 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 
 public class ApiClient {
 
     private final String baseUrl;
-    private final HttpClient http = HttpClient.newHttpClient();
+    private final HttpClient http = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(30))
+            .build();
     private final ObjectMapper mapper = new ObjectMapper();
 
     public ApiClient(String baseUrl) {
@@ -26,6 +29,7 @@ public class ApiClient {
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + path))
                 .header("Content-Type", "application/json")
+                .timeout(Duration.ofSeconds(60))
                 .POST(HttpRequest.BodyPublishers.ofString(json));
 
         if (bearerToken != null && !bearerToken.isBlank()) {
@@ -37,6 +41,10 @@ public class ApiClient {
             throw new RuntimeException("HTTP " + res.statusCode() + ": " + res.body());
         }
 
+        if (responseType == Void.class) {
+            return null;
+        }
+
         return mapper.readValue(res.body(), responseType);
     }
 
@@ -45,6 +53,7 @@ public class ApiClient {
 
         HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + path))
+                .timeout(Duration.ofSeconds(60))
                 .GET();
 
         if (bearerToken != null && !bearerToken.isBlank()) {
@@ -67,6 +76,7 @@ public class ApiClient {
     HttpRequest.Builder builder = HttpRequest.newBuilder()
             .uri(URI.create(baseUrl + path))
             .header("Content-Type", "application/json")
+            .timeout(Duration.ofSeconds(60))
             .PUT(HttpRequest.BodyPublishers.ofString(json));  // ← PUT not POST!
 
     if (bearerToken != null && !bearerToken.isBlank()) {

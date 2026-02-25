@@ -1,5 +1,6 @@
 package planner.ui;
 
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -173,19 +174,32 @@ public class TasksController {
                 date.getDayOfMonth(), date.getMonthValue(), date.getYear(),
                 hour, minute, ampm);
             
-            try {
-                taskApi.createTask(Session.getToken(), title, deadline);
+            statusLabel.setText("Creating task...");
+
+            Task<Void> createTaskTask = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    taskApi.createTask(Session.getToken(), title, deadline);
+                    return null;
+                }
+            };
+
+            createTaskTask.setOnSucceeded(e -> {
+                statusLabel.setText("");
                 loadTasks();
-                
-            } catch (Exception e) {
+            });
+
+            createTaskTask.setOnFailed(e -> {
+                statusLabel.setText("");
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText(null);
-                alert.setContentText("Failed to create task: " + e.getMessage());
-                System.out.println(e.getMessage());
+                alert.setContentText("Failed to create task: " + createTaskTask.getException().getMessage());
                 setAlertIcon(alert);
                 alert.showAndWait();
-            }
+            });
+
+            new Thread(createTaskTask).start();
         }
     }
     @FXML private TableView<TaskDto> tasksTable;
@@ -275,19 +289,27 @@ public class TasksController {
         
 
     private void loadTasks() {
+        Task<TaskDto[]> loadTasksTask = new Task<>() {
+            @Override
+            protected TaskDto[] call() throws Exception {
+                return taskApi.getTasks(Session.getToken());
+            }
+        };
 
-        try {
-            TaskDto[] tasks = taskApi.getTasks(Session.getToken());
+        loadTasksTask.setOnSucceeded(e -> {
+            TaskDto[] tasks = loadTasksTask.getValue();
             tasksTable.getItems().setAll(List.of(tasks));
-        } catch (Exception e) {
+        });
+
+        loadTasksTask.setOnFailed(e -> {
             statusLabel.setText("Failed to load tasks");
-            System.out.println(e.getMessage());
-            e.printStackTrace();
-        }
+        });
+
+        new Thread(loadTasksTask).start();
     }
 
         @FXML
-        void onMarkDone(ActionEvent event) throws Exception{
+        void onMarkDone(ActionEvent event) {
             TaskDto selected = tasksTable.getSelectionModel().getSelectedItem();
             
             if (selected == null) {
@@ -300,9 +322,18 @@ public class TasksController {
                 return;
             }
             
-            try {
-                taskApi.completeTask(Session.getToken(), selected.id);
-                
+            statusLabel.setText("Completing task...");
+
+            Task<Void> completeTaskTask = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    taskApi.completeTask(Session.getToken(), selected.id);
+                    return null;
+                }
+            };
+
+            completeTaskTask.setOnSucceeded(e -> {
+                statusLabel.setText("");
                 loadTasks();
                 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -311,10 +342,13 @@ public class TasksController {
                 alert.setContentText("Task completed!");
                 setAlertIcon(alert);
                 alert.showAndWait();
-                
-            } catch (Exception e) {
-                statusLabel.setText("Error: " + e.getMessage());
-            }
+            });
+
+            completeTaskTask.setOnFailed(e -> {
+                statusLabel.setText("Error: " + completeTaskTask.getException().getMessage());
+            });
+
+            new Thread(completeTaskTask).start();
         }
 
         @FXML
@@ -338,12 +372,23 @@ public class TasksController {
 
             Optional<String> result = newProgress.showAndWait();
             if (!result.isPresent()) {
-            return;
-}
-            try {
-                int progress = Integer.parseInt(result.get().trim());
+                return;
+            }
 
-                if (progress < 0 || progress > 100) {
+            int progress;
+            try {
+                progress = Integer.parseInt(result.get().trim());
+            } catch (NumberFormatException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Invalid Input");
+                alert.setHeaderText(null);
+                alert.setContentText("Progress must be a number between 0 and 100");
+                setAlertIcon(alert);
+                alert.showAndWait();
+                return;
+            }
+
+            if (progress < 0 || progress > 100) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Invalid Progress");
                 alert.setHeaderText(null);
@@ -351,22 +396,34 @@ public class TasksController {
                 setAlertIcon(alert);
                 alert.showAndWait();
                 return;
-                }
-                taskApi.updateProgress(Session.getToken(), selected.id, progress);
-                
-                loadTasks();
-                        
-            } catch (Exception e) {
+            }
 
+            statusLabel.setText("Updating progress...");
+
+            Task<Void> updateProgressTask = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    taskApi.updateProgress(Session.getToken(), selected.id, progress);
+                    return null;
+                }
+            };
+
+            updateProgressTask.setOnSucceeded(e -> {
+                statusLabel.setText("");
+                loadTasks();
+            });
+
+            updateProgressTask.setOnFailed(e -> {
+                statusLabel.setText("");
                 Alert alertExcept = new Alert(Alert.AlertType.ERROR);
                 alertExcept.setTitle("Error");
                 alertExcept.setHeaderText(null);
-                alertExcept.setContentText("Progress must be between 0 and 100");
-                System.out.println(e.getMessage());
+                alertExcept.setContentText("Failed to update progress");
                 setAlertIcon(alertExcept);
                 alertExcept.showAndWait();
-                
-            }
+            });
+
+            new Thread(updateProgressTask).start();
         }
 
 
@@ -407,21 +464,32 @@ public class TasksController {
                 return;
             }
             
-            try {
-                taskApi.renameTask(Session.getToken(), selected.id, title);
-                
+            statusLabel.setText("Renaming task...");
+
+            Task<Void> renameTaskTask = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    taskApi.renameTask(Session.getToken(), selected.id, title);
+                    return null;
+                }
+            };
+
+            renameTaskTask.setOnSucceeded(e -> {
+                statusLabel.setText("");
                 loadTasks();
-                
-                
-            } catch (Exception e) {
+            });
+
+            renameTaskTask.setOnFailed(e -> {
                 statusLabel.setText("Error");
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText(null);
+                alert.setContentText("Failed to rename task");
                 setAlertIcon(alert);
                 alert.showAndWait();
-                return;
-            }
+            });
+
+            new Thread(renameTaskTask).start();
         }
     
 
@@ -517,7 +585,6 @@ public class TasksController {
 
         row.setOnDragDropped(event -> {
             Dragboard db = event.getDragboard();
-            boolean success = false;
             
             if (db.hasString()) {
                 int draggedIndex = Integer.parseInt(db.getString());
@@ -527,18 +594,36 @@ public class TasksController {
                 TaskDto draggedTask = items.remove(draggedIndex);
                 items.add(targetIndex, draggedTask);
                 List<Long> orderedIds = items.stream()
-                .map(task -> task.id)
-                .toList();
-                try {
-                    taskApi.reorder(Session.getToken(), orderedIds);
-                    success = true;
-                } catch (Exception e) {
+                    .map(task -> task.id)
+                    .toList();
+
+                statusLabel.setText("Reordering tasks...");
+
+                Task<Void> reorderTask = new Task<>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        taskApi.reorder(Session.getToken(), orderedIds);
+                        return null;
+                    }
+                };
+
+                reorderTask.setOnSucceeded(e -> {
+                    statusLabel.setText("");
+                    event.setDropCompleted(true);
+                });
+
+                reorderTask.setOnFailed(e -> {
                     statusLabel.setText("Error reordering tasks");
-                    System.out.println(e.getMessage());
-                }
+                    event.setDropCompleted(false);
+                    // Reload tasks to restore original order
+                    loadTasks();
+                });
+
+                new Thread(reorderTask).start();
+            } else {
+                event.setDropCompleted(false);
             }
             
-            event.setDropCompleted(success);
             event.consume();
         });
 

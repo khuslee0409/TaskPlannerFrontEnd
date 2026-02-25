@@ -1,5 +1,6 @@
 package planner.ui;
 
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -29,7 +30,8 @@ public class ConfirmationPage {
     @FXML
     void SubmitCode(ActionEvent event) {
         String code = verifyCode.getText().trim();
-        String email = Session.getPendingEmail();
+        String pendingEmail = Session.getPendingEmail();
+        final String email = (pendingEmail == null) ? null : pendingEmail.trim().toLowerCase();
         
         if (code.isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -51,19 +53,59 @@ public class ConfirmationPage {
             return;
         }
         
-        try {
-            api.verifyCode(email, code);
-            confirmLabel.setText("You can now login");
-        } catch (Exception e) {
+        confirmLabel.setText("Verifying...");
+
+        Task<Boolean> verifyTask = new Task<>() {
+            @Override
+            protected Boolean call() throws Exception {
+                return api.verifyCode(email, code);
+                
+            }
+        };
+
+        verifyTask.setOnSucceeded(e -> {
+            Boolean isValid = verifyTask.getValue();
+            if (Boolean.TRUE.equals(isValid)) {
+                confirmLabel.setText("Verification successful! You can now login.");
+                confirmLabel.setStyle("-fx-text-fill: green;");
+                
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(1500);
+                        javafx.application.Platform.runLater(() -> SceneNavigator.goToLogin());
+                    } catch (InterruptedException ex) {
+                    }
+                }).start();
+            } else {
+                confirmLabel.setText("Invalid verification code. Please try again.");
+                confirmLabel.setStyle("-fx-text-fill: red;");
+            }
+        });
+
+        verifyTask.setOnFailed(e -> {
+            confirmLabel.setText("");
+            Throwable ex = verifyTask.getException();
+            String errorMsg = "Verification failed";
+            
+            if (ex != null && ex.getMessage() != null && !ex.getMessage().isEmpty()) {
+                errorMsg = ex.getMessage();
+                if (errorMsg.startsWith("HTTP ")) {
+                    int colonIndex = errorMsg.indexOf(":");
+                    if (colonIndex > 0 && colonIndex < errorMsg.length() - 1) {
+                        errorMsg = errorMsg.substring(colonIndex + 1).trim();
+                    }
+                }
+            }
+            
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Verification Failed");
             alert.setHeaderText(null);
-            alert.setContentText("Invalid verification code");
-            System.out.println(e.getMessage());
+            alert.setContentText(errorMsg);
             setAlertIcon(alert);
             alert.showAndWait();
-            e.printStackTrace();
-        }
+        });
+
+        new Thread(verifyTask).start();
     }
 
     @FXML

@@ -1,5 +1,6 @@
 package planner.ui;
 
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -31,46 +32,50 @@ public class NewPassword {
     
     @FXML
     void submitNewPassword(ActionEvent event) {
-        try {
-            String newPassword = newPasswordField.getText();
-            String confirmPassword = confirmPasswordField.getText();
-            
-            if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
-                warningMessageNewPass.setText("Please enter and confirm your password");
-                warningMessageNewPass.setStyle("-fx-text-fill: red;");
-                return;
+        String newPassword = newPasswordField.getText();
+        String confirmPassword = confirmPasswordField.getText();
+        
+        if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
+            warningMessageNewPass.setText("Please enter and confirm your password");
+            warningMessageNewPass.setStyle("-fx-text-fill: red;");
+            return;
+        }
+        
+        if (!newPassword.equals(confirmPassword)) {
+            warningMessageNewPass.setText("Passwords do not match");
+            warningMessageNewPass.setStyle("-fx-text-fill: red;");
+            return;
+        }
+        
+        if (newPassword.length() < 6) {
+            warningMessageNewPass.setText("Password must be at least 6 characters");
+            warningMessageNewPass.setStyle("-fx-text-fill: red;");
+            return;
+        }
+        
+        warningMessageNewPass.setText("Resetting password...");
+        warningMessageNewPass.setStyle("-fx-text-fill: blue;");
+
+        Task<Void> resetTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                resetApi.setNewPassword(email, resetToken, newPassword);
+                Thread.sleep(2000); // Wait 2 seconds before navigating
+                return null;
             }
-            
-            if (!newPassword.equals(confirmPassword)) {
-                warningMessageNewPass.setText("Passwords do not match");
-                warningMessageNewPass.setStyle("-fx-text-fill: red;");
-                return;
-            }
-            
-            if (newPassword.length() < 6) {
-                warningMessageNewPass.setText("Password must be at least 6 characters");
-                warningMessageNewPass.setStyle("-fx-text-fill: red;");
-                return;
-            }
-            
-            resetApi.setNewPassword(email, resetToken, newPassword);
-            
+        };
+
+        resetTask.setOnSucceeded(e -> {
             warningMessageNewPass.setText("Password reset successfully!");
             warningMessageNewPass.setStyle("-fx-text-fill: green;");
-            
-            // Navigate to login page after 2 seconds
-            new Thread(() -> {
-                try {
-                    Thread.sleep(2000);
-                    javafx.application.Platform.runLater(SceneNavigator::goToLogin);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }).start();
-            
-        } catch (Exception e) {
-            warningMessageNewPass.setText("Error: " + e.getMessage());
+            SceneNavigator.goToLogin();
+        });
+
+        resetTask.setOnFailed(e -> {
+            warningMessageNewPass.setText("Error: " + resetTask.getException().getMessage());
             warningMessageNewPass.setStyle("-fx-text-fill: red;");
-        }
+        });
+
+        new Thread(resetTask).start();
     }
 }

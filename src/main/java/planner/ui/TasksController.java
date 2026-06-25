@@ -174,7 +174,6 @@ public class TasksController {
                 date.getDayOfMonth(), date.getMonthValue(), date.getYear(),
                 hour, minute, ampm);
             
-            statusLabel.setText("Creating task...");
 
             Task<Void> createTaskTask = new Task<>() {
                 @Override
@@ -185,12 +184,10 @@ public class TasksController {
             };
 
             createTaskTask.setOnSucceeded(e -> {
-                statusLabel.setText("");
                 loadTasks();
             });
 
             createTaskTask.setOnFailed(e -> {
-                statusLabel.setText("");
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText(null);
@@ -322,7 +319,6 @@ public class TasksController {
                 return;
             }
             
-            statusLabel.setText("Completing task...");
 
             Task<Void> completeTaskTask = new Task<>() {
                 @Override
@@ -333,7 +329,6 @@ public class TasksController {
             };
 
             completeTaskTask.setOnSucceeded(e -> {
-                statusLabel.setText("");
                 loadTasks();
                 
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -398,7 +393,6 @@ public class TasksController {
                 return;
             }
 
-            statusLabel.setText("Updating progress...");
 
             Task<Void> updateProgressTask = new Task<>() {
                 @Override
@@ -409,12 +403,10 @@ public class TasksController {
             };
 
             updateProgressTask.setOnSucceeded(e -> {
-                statusLabel.setText("");
                 loadTasks();
             });
 
             updateProgressTask.setOnFailed(e -> {
-                statusLabel.setText("");
                 Alert alertExcept = new Alert(Alert.AlertType.ERROR);
                 alertExcept.setTitle("Error");
                 alertExcept.setHeaderText(null);
@@ -464,7 +456,6 @@ public class TasksController {
                 return;
             }
             
-            statusLabel.setText("Renaming task...");
 
             Task<Void> renameTaskTask = new Task<>() {
                 @Override
@@ -475,7 +466,6 @@ public class TasksController {
             };
 
             renameTaskTask.setOnSucceeded(e -> {
-                statusLabel.setText("");
                 loadTasks();
             });
 
@@ -596,9 +586,6 @@ public class TasksController {
                 List<Long> orderedIds = items.stream()
                     .map(task -> task.id)
                     .toList();
-
-                statusLabel.setText("Reordering tasks...");
-
                 Task<Void> reorderTask = new Task<>() {
                     @Override
                     protected Void call() throws Exception {
@@ -608,7 +595,6 @@ public class TasksController {
                 };
 
                 reorderTask.setOnSucceeded(e -> {
-                    statusLabel.setText("");
                     event.setDropCompleted(true);
                 });
 
